@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Supervisório SCADA | Interfast Armazém 03 - InverterElectric</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            border-bottom: 4px solid var(--accent);
+            margin-bottom: 25px;
+        }
+        .header-titles h1 { margin: 0; font-size: 24px; color: #fff; }
+        .header-titles p { margin: 5px 0 0 0; color: var(--text-muted); font-size: 14px; }
+        .brand-badge {
+            background: #0f172a;
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .brand-badge img { height: 40px; object-fit: contain; }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 25px;
+        }
+        @media (max-width: 1000px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+        .control-panel, .motors-section {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        .control-panel h3, .motors-section h3 { margin-top: 0; border-bottom: 1px solid #334155; padding-bottom: 10px; font-size: 18px; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 13px; font-weight: 600; }
+        .form-group input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: #fff;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 15px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #0f172a;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #475569;
+            cursor: pointer;
+        }
+        .btn-update {
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 15px;
+        }
+        .btn-update:hover { background: #2563eb; }
+
+        .motors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+        .motor-card {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 18px;
+            border-left: 6px solid #64748b;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+        }
+        .motor-card.ligado { border-left-color: var(--success); background: rgba(16, 185, 129, 0.05); }
+        .motor-card.desligado { border-left-color: var(--danger); background: rgba(239, 68, 68, 0.05); }
+        
+        .motor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .motor-header h4 { margin: 0; font-size: 16px; color: #fff; }
+        
+        .status-pill {
+            font-size: 11px;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .ligado .status-pill { background: var(--success); color: #000; }
+        .desligado .status-pill { background: var(--danger); color: #fff; }
+
+        .motor-details p { margin: 5px 0; font-size: 13px; color: var(--text-muted); }
+        .motor-details strong { color: var(--text-main); }
+
+        .motor-controls {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #334155;
+            display: flex;
+            gap: 8px;
+        }
+        .motor-controls select {
+            flex: 1;
+            background: #1e293b;
+            color: #fff;
+            border: 1px solid #475569;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <div class="header-titles">
+            <h1>🌾 SuperVisor SCADA • Interfast Uberlândia</h1>
+            <p>Armazém 03 — Sistema Automatizado de Termometria e Aeração de Grãos</p>
+        </div>
+        <div class="brand-badge">
+            <!-- Logótipo real carregado da pasta static -->
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="InverterElectric Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span style="display:none; color: var(--accent); font-weight: bold; font-size: 14px;">⚡ INVERTERELECTRIC</span>
+        </div>
+    </div>
+
+    <form method="POST">
+        <div class="dashboard-grid">
+            <!-- Painel de Simulação Geral -->
+            <div class="control-panel">
+                <h3>🎛️ Condições Ambientais</h3>
+                
+                <div class="form-group">
+                    <label>Temperatura Média da Massa (°C):</label>
+                    <input type="number" step="0.1" name="temp" value="{{ temp }}">
+                </div>
+                
+                <div class="form-group">
+                    <label>Humidade Relativa do Ar (%):</label>
+                    <input type="number" step="0.1" name="umidade" value="{{ umidade }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" name="chuva" {% if chuva %}checked{% endif %}>
+                        <span>🌧️ Sensor de Chuva Ativado</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-update">🔄 Sincronizar Sistema</button>
+            </div>
+
+            <!-- Secção de Motores com Controlo Independente Manual/Auto -->
+            <div class="motors-section">
+                <h3>⚙️ Estado Operacional e Controlo Individual dos Motores</h3>
+                <div class="motors-grid">
+                    {% for nome, dados in motores.items() %}
+                    <div class="motor-card {{ 'ligado' if dados.status == 'LIGADO' else 'desligado' }}">
+                        <div class="motor-header">
+                            <h4>{{ nome }}</h4>
+                            <span class="status-pill">{{ dados.status }}</span>
+                        </div>
+                        <div class="motor-details">
+                            <p><strong>Corrente:</strong> {{ dados.corrente_A }} A</p>
+                            <p>📝 <em>{{ dados.motivo }}</em></p>
+                        </div>
+                        
+                        <!-- Comandos Independentes por Motor -->
+                        <div class="motor-controls">
+                            <select name="modo_{{ nome }}" onchange="this.form.submit()">
+                                <option value="AUTO" {% if dados.modo_controle == 'AUTO' %}selected{% endif %}>Modo: AUTO</option>
+                                <option value="MANUAL" {% if dados.modo_controle == 'MANUAL' %}selected{% endif %}>Modo: MANUAL</option>
+                            </select>
+
+                            <select name="cmd_{NOME}" style="display:none;"></select> <!-- placeholder -->
+                            
+                            <select name="cmd_{{ nome }}" onchange="this.form.submit()" {% if dados.modo_controle == 'AUTO' %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
+                                <option value="LIGADO" {% if dados.comando_manual == 'LIGADO' %}selected{% endif %}>Ligar</option>
+                                <option value="DESLIGADO" {% if dados.comando_manual == 'DESLIGADO' %}selected{% endif %}>Desligar</option>
+                            </select>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </form>
+
+</body>
+</html>
